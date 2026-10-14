@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { DEMO_PASSWORD, DEMO_USER, useAuth } from "@/auth/AuthProvider";
 import { DEMO } from "@/integrations/supabase/client";
+import { usePageTitle } from "@/lib/usePageTitle";
 import { Button, Field, Wordmark, inputClass } from "@/components/ui";
 
 export default function Login() {
@@ -14,6 +15,7 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  usePageTitle("Sign in");
   const from = (location.state as { from?: string } | null)?.from ?? "/app";
 
   if (user) return <Navigate to={from} replace />;

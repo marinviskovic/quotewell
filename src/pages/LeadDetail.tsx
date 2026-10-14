@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Mail, Phone, Trash2 } from "lucide-react";
 import { addActivity, deleteLead, getActivities, getLead, updateLead } from "@/lib/api";
 import { notifyLeadsChanged } from "@/lib/useLeads";
+import { usePageTitle } from "@/lib/usePageTitle";
 import { STAGES } from "@/lib/stages";
 import { formatDateTime, formatDay, formatMoney } from "@/lib/format";
 import StageBadge, { stageStyle } from "@/components/StageBadge";
@@ -19,6 +20,7 @@ export default function LeadDetail() {
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  usePageTitle(lead?.name ?? "Lead");
 
   // Re-load when the id in the URL changes, not only on first mount.
   useEffect(() => {

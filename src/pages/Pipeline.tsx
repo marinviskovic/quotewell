@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useLeads } from "@/lib/useLeads";
+import { usePageTitle } from "@/lib/usePageTitle";
 import { STAGES } from "@/lib/stages";
 import { formatMoney } from "@/lib/format";
 import { stageStyle } from "@/components/StageBadge";
@@ -8,6 +9,7 @@ import { ErrorNote, PageSkeleton } from "@/components/states";
 
 export default function Pipeline() {
   const { leads, error } = useLeads();
+  usePageTitle("Pipeline");
   if (error) return <ErrorNote message={error} />;
   if (!leads) return <PageSkeleton />;
 

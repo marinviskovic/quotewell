@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowUpRight, Plus } from "lucide-react";
 import { useLeads } from "@/lib/useLeads";
+import { usePageTitle } from "@/lib/usePageTitle";
 import { daysFromToday, formatMoney, parseDay, todayKey } from "@/lib/format";
 import { STAGES } from "@/lib/stages";
 import { useOpenLeadForm } from "@/components/Layout";
@@ -12,6 +13,7 @@ import { ErrorNote, PageSkeleton } from "@/components/states";
 export default function Dashboard() {
   const { leads, error } = useLeads();
   const openForm = useOpenLeadForm();
+  usePageTitle("Dashboard");
   if (error) return <ErrorNote message={error} />;
   if (!leads) return <PageSkeleton />;
 

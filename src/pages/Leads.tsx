@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ChevronRight, Plus, Search } from "lucide-react";
 import { useLeads } from "@/lib/useLeads";
+import { usePageTitle } from "@/lib/usePageTitle";
 import { STAGES } from "@/lib/stages";
 import { formatMoney } from "@/lib/format";
 import { useOpenLeadForm } from "@/components/Layout";
@@ -14,6 +15,7 @@ import type { Stage } from "@/types";
 export default function Leads() {
   const { leads, error } = useLeads();
   const openForm = useOpenLeadForm();
+  usePageTitle("Leads");
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const [query, setQuery] = useState("");
