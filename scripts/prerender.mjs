@@ -1,6 +1,6 @@
 // After the client build: put the rendered homepage into dist/index.html,
 // and write robots.txt and sitemap.xml for the production address.
-import { readFileSync, writeFileSync, rmSync } from "node:fs";
+import { readFileSync, readdirSync, writeFileSync, rmSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
 import { loadEnv } from "vite";
@@ -11,7 +11,10 @@ const site = (env.VITE_SITE_URL || "https://quotewell.app").replace(/\/$/, "");
 
 const { render } = await import(pathToFileURL(resolve(root, "dist-ssr/entry-server.js")).href);
 const file = resolve(root, "dist/index.html");
-const html = readFileSync(file, "utf8").replace("<!--app-->", render());
+// Preload the two fonts the homepage needs above the fold.
+const fonts = readdirSync(resolve(root, "dist/assets")).filter((f) => /^(geist-latin-wght|instrument-serif-latin-400-italic).*\.woff2$/.test(f));
+const preload = fonts.map((f) => `<link rel="preload" as="font" type="font/woff2" href="/assets/${f}" crossorigin>`).join("\n    ");
+const html = readFileSync(file, "utf8").replace("<!--app-->", render()).replace("</head>", `  ${preload}\n  </head>`);
 writeFileSync(file, html);
 rmSync(resolve(root, "dist-ssr"), { recursive: true, force: true });
 
