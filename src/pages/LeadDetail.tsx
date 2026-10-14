@@ -20,6 +20,7 @@ export default function LeadDetail() {
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   usePageTitle(lead?.name ?? "Lead");
 
   // Re-load when the id in the URL changes, not only on first mount.
@@ -56,7 +57,7 @@ export default function LeadDetail() {
   };
 
   const remove = async () => {
-    if (!window.confirm(`Delete ${lead.name}? Their notes are deleted too.`)) return;
+    setConfirming(false);
     await deleteLead(lead.id);
     notifyLeadsChanged();
     navigate("/app/leads");
@@ -105,11 +106,21 @@ export default function LeadDetail() {
               <Phone size={16} /> Call
             </a>
           )}
-          <Button variant="danger" onClick={remove} aria-label={`Delete ${lead.name}`} className="w-10 px-0">
+          <Button variant="danger" onClick={() => setConfirming(true)} aria-label={`Delete ${lead.name}`} className="w-10 px-0">
             <Trash2 size={16} />
           </Button>
         </div>
       </div>
+
+      {confirming && (
+        <div role="alertdialog" aria-label="Confirm delete" className="flex flex-col gap-3 rounded-xl border border-danger/25 bg-danger-soft p-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-danger">Delete {lead.name} and their notes? This can't be undone.</p>
+          <div className="flex gap-2">
+            <Button variant="secondary" onClick={() => setConfirming(false)} className="flex-1 sm:flex-none">Keep</Button>
+            <Button variant="destructive" onClick={remove} className="flex-1 sm:flex-none">Delete lead</Button>
+          </div>
+        </div>
+      )}
 
       <div className="no-scrollbar -mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
         <div className="inline-flex rounded-xl border border-line bg-surface p-1 shadow-card" role="radiogroup" aria-label="Stage">

@@ -81,6 +81,17 @@ await check("form rejects a bad email", async () => {
   await page.keyboard.press("Escape");
 });
 
+await check("delete asks first, then removes the lead", async () => {
+  await page.goto(`${base}/app/leads/l08`);
+  await page.getByLabel("Delete Hannah Price").click();
+  await page.getByRole("button", { name: "Keep" }).click();
+  await page.getByLabel("Delete Hannah Price").click();
+  await page.getByRole("button", { name: "Delete lead" }).click();
+  await page.waitForURL(/\/app\/leads$/);
+  await page.locator("table tbody tr").first().waitFor();
+  assert.equal(await page.locator("table").getByText("Hannah Price").count(), 0);
+});
+
 await check("refreshing a deep link keeps the page", async () => {
   await page.goto(`${base}/app/leads/l04`);
   await page.reload();

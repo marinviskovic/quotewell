@@ -1,11 +1,12 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
-type Variant = "primary" | "secondary" | "ghost" | "danger";
+type Variant = "primary" | "secondary" | "ghost" | "danger" | "destructive";
 const variants: Record<Variant, string> = {
   primary: "bg-fern text-white hover:bg-fern-hover shadow-card",
   secondary: "bg-surface text-ink border border-line-strong hover:bg-paper",
   ghost: "text-muted hover:bg-black/5 hover:text-ink",
   danger: "bg-surface text-danger border border-line-strong hover:bg-danger-soft",
+  destructive: "bg-danger text-white hover:bg-danger/90 shadow-card",
 };
 
 export function Button({ variant = "primary", className = "", ...props }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }) {

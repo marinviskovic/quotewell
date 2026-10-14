@@ -72,9 +72,9 @@ PASS deleted lead's notes were removed
 
 ### App (`npm run test:e2e`, Chromium, America/Los_Angeles)
 
-12/12 checks pass: sign-in redirect, wrong password, pipeline total, time zone,
-stage filter, double submit, validation, deep-link refresh, no sideways scroll on
-phones (5 pages), sign out, no JavaScript errors.
+13/13 checks pass: sign-in redirect, wrong password, pipeline total, time zone,
+stage filter, double submit, validation, delete confirmation, deep-link refresh,
+no sideways scroll on phones (5 pages), sign out, no JavaScript errors.
 
 ### Lighthouse (public entry page, local production build)
 
