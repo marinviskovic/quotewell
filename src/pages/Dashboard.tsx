@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { DollarSign, Users, Trophy, CalendarClock } from "lucide-react";
 import { getLeads } from "@/lib/api";
 import StageBadge from "@/components/StageBadge";
+import { formatDay, formatMoney, todayKey } from "@/lib/format";
 import type { Lead } from "@/types";
 
 export default function Dashboard() {
@@ -12,14 +13,14 @@ export default function Dashboard() {
     getLeads().then(setLeads);
   }, []);
 
-  const pipeline = leads.filter((l) => l.stage !== "lost").reduce((sum, l) => sum + l.value, 0);
-  const won = leads.filter((l) => l.stage === "Won").length;
-  const today = new Date().toDateString();
-  const dueToday = leads.filter((l) => l.follow_up && new Date(l.follow_up).toDateString() === today).length;
+  const pipeline = leads.filter((l) => l.stage !== "lost" && l.stage !== "won").reduce((sum, l) => sum + Number(l.value), 0);
+  const won = leads.filter((l) => l.stage === "won").length;
+  const today = todayKey();
+  const dueToday = leads.filter((l) => l.follow_up === today).length;
 
   const stats = [
     { label: "Total leads", value: leads.length, icon: Users },
-    { label: "Pipeline value", value: `$${pipeline}`, icon: DollarSign },
+    { label: "Open pipeline", value: formatMoney(pipeline), icon: DollarSign },
     { label: "Won deals", value: won, icon: Trophy },
     { label: "Follow-ups today", value: dueToday, icon: CalendarClock },
   ];
@@ -55,9 +56,9 @@ export default function Dashboard() {
               <tr key={l.id} className="border-t">
                 <td className="px-5 py-3 font-medium"><Link to={`/leads/${l.id}`}>{l.name}</Link></td>
                 <td className="px-5 py-3">{l.service}</td>
-                <td className="px-5 py-3">${l.value}</td>
+                <td className="px-5 py-3">{formatMoney(l.value)}</td>
                 <td className="px-5 py-3"><StageBadge stage={l.stage} /></td>
-                <td className="px-5 py-3">{l.follow_up ? new Date(l.follow_up).toLocaleDateString() : "-"}</td>
+                <td className="px-5 py-3">{formatDay(l.follow_up)}</td>
               </tr>
             ))}
           </tbody>

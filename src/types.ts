@@ -1,3 +1,5 @@
+export type Stage = "new" | "contacted" | "quoted" | "won" | "lost";
+
 export type Lead = {
   id: string;
   created_at: string;
@@ -6,9 +8,10 @@ export type Lead = {
   email: string;
   phone: string | null;
   service: string;
-  value: string;
-  stage: string;
+  value: number;
+  stage: Stage;
   source: string;
+  /** Calendar date, YYYY-MM-DD. Not a timestamp. */
   follow_up: string | null;
   notes: string | null;
   owner_id?: string;

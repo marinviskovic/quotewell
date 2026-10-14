@@ -4,14 +4,14 @@ import { Plus, Search } from "lucide-react";
 import { getLeads } from "@/lib/api";
 import StageBadge from "@/components/StageBadge";
 import LeadForm from "@/components/LeadForm";
+import { STAGES } from "@/lib/stages";
+import { formatMoney } from "@/lib/format";
 import type { Lead } from "@/types";
-
-const stages = ["All", "New", "Contacted", "Quoted", "Won", "Lost"];
 
 export default function Leads() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [query, setQuery] = useState("");
-  const [stage, setStage] = useState("All");
+  const [stage, setStage] = useState("all");
   const [open, setOpen] = useState(false);
 
   const load = () => getLeads().then(setLeads);
@@ -20,7 +20,7 @@ export default function Leads() {
   }, []);
 
   const filtered = leads.filter(
-    (l) => l.name.toLowerCase().includes(query.toLowerCase()) && (stage === "All" || l.stage === stage),
+    (l) => `${l.name} ${l.company ?? ""} ${l.email} ${l.service}`.toLowerCase().includes(query.trim().toLowerCase()) && (stage === "all" || l.stage === stage),
   );
 
   return (
@@ -37,7 +37,8 @@ export default function Leads() {
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search leads..." className="w-full rounded-md border bg-white py-2 pl-9 pr-3 text-sm" />
         </div>
         <select value={stage} onChange={(e) => setStage(e.target.value)} className="rounded-md border bg-white px-3 py-2 text-sm">
-          {stages.map((s) => <option key={s}>{s}</option>)}
+          <option value="all">All stages</option>
+          {STAGES.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
         </select>
       </div>
       <div className="rounded-xl border bg-white">
@@ -60,7 +61,7 @@ export default function Leads() {
                 <td className="px-5 py-3">{l.email}</td>
                 <td className="px-5 py-3">{l.phone}</td>
                 <td className="px-5 py-3">{l.service}</td>
-                <td className="px-5 py-3">${l.value}</td>
+                <td className="px-5 py-3">{formatMoney(l.value)}</td>
                 <td className="px-5 py-3"><StageBadge stage={l.stage} /></td>
                 <td className="px-5 py-3">{l.source}</td>
               </tr>
