@@ -14,6 +14,8 @@ export default function LeadForm({ onClose }: { onClose: () => void }) {
   const [form, setForm] = useState(empty);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  // State updates land after the next render, so two fast clicks would both see saving === false.
+  const inFlight = useRef(false);
   const first = useRef<HTMLInputElement>(null);
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
     setForm({ ...form, [k]: e.target.value });
@@ -43,7 +45,8 @@ export default function LeadForm({ onClose }: { onClose: () => void }) {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     // A second click while the first save is in flight used to create a duplicate lead.
-    if (saving || !validate()) return;
+    if (inFlight.current || !validate()) return;
+    inFlight.current = true;
     setSaving(true);
     try {
       const lead = await createLead({
@@ -63,6 +66,7 @@ export default function LeadForm({ onClose }: { onClose: () => void }) {
       navigate(`/app/leads/${lead.id}`);
     } catch (err) {
       setErrors({ form: (err as Error).message });
+      inFlight.current = false;
       setSaving(false);
     }
   };

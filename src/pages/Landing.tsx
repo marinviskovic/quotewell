@@ -31,7 +31,7 @@ const rows = [
 export default function Landing() {
   usePageTitle("");
   return (
-    <div className="min-h-dvh bg-paper text-ink">
+    <div className="min-h-dvh overflow-x-clip bg-paper text-ink">
       <header className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         <Link to="/" aria-label="QuoteWell home"><Wordmark /></Link>
         <nav className="flex items-center gap-1 sm:gap-2">

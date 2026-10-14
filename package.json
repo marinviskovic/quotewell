@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "build:demo": "VITE_HASH_ROUTER=true vite build --base ./ --outDir dist-demo",
     "test:db": "bash supabase/tests/run-tests.sh",
-    "typecheck": "tsc --noEmit -p ."
+    "typecheck": "tsc --noEmit -p .",
+    "test:e2e": "node tests/smoke.mjs"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
@@ -25,6 +26,7 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "playwright": "^1.56.1",
     "tailwindcss": "^4.2.1",
     "typescript": "^5.8.3",
     "vite": "^7.1.0"
