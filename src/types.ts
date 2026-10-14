@@ -11,6 +11,7 @@ export type Lead = {
   source: string;
   follow_up: string | null;
   notes: string | null;
+  owner_id?: string;
 };
 
 export type Activity = {
@@ -18,4 +19,5 @@ export type Activity = {
   lead_id: string;
   body: string;
   created_at: string;
+  owner_id?: string;
 };
