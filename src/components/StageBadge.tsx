@@ -1,11 +1,20 @@
-const colors: Record<string, string> = {
-  new: "bg-blue-100 text-blue-700",
-  contacted: "bg-amber-100 text-amber-700",
-  quoted: "bg-violet-100 text-violet-700",
-  won: "bg-green-100 text-green-700",
-  lost: "bg-slate-100 text-slate-600",
+import { stageLabel } from "@/lib/stages";
+import type { Stage } from "@/types";
+
+export const stageStyle: Record<Stage, { badge: string; dot: string; bar: string }> = {
+  new: { badge: "bg-stage-new-soft text-stage-new", dot: "bg-stage-new", bar: "bg-stage-new" },
+  contacted: { badge: "bg-stage-contacted-soft text-stage-contacted", dot: "bg-stage-contacted", bar: "bg-stage-contacted" },
+  quoted: { badge: "bg-stage-quoted-soft text-stage-quoted", dot: "bg-stage-quoted", bar: "bg-stage-quoted" },
+  won: { badge: "bg-stage-won-soft text-stage-won", dot: "bg-stage-won", bar: "bg-stage-won" },
+  lost: { badge: "bg-stage-lost-soft text-stage-lost", dot: "bg-stage-lost", bar: "bg-stage-lost" },
 };
 
-export default function StageBadge({ stage }: { stage: string }) {
-  return <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${colors[stage]}`}>{stage}</span>;
+export default function StageBadge({ stage }: { stage: Stage }) {
+  const s = stageStyle[stage] ?? stageStyle.new;
+  return (
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${s.badge}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
+      {stageLabel(stage)}
+    </span>
+  );
 }

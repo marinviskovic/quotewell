@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
-import { Sparkles } from "lucide-react";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { DEMO_PASSWORD, DEMO_USER, useAuth } from "@/auth/AuthProvider";
 import { DEMO } from "@/integrations/supabase/client";
+import { Button, Field, Wordmark, inputClass } from "@/components/ui";
 
 export default function Login() {
   const { user, signIn, signUp } = useAuth();
@@ -14,7 +14,7 @@ export default function Login() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const from = (location.state as { from?: string } | null)?.from ?? "/";
+  const from = (location.state as { from?: string } | null)?.from ?? "/app";
 
   if (user) return <Navigate to={from} replace />;
 
@@ -31,26 +31,31 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-violet-50 to-fuchsia-50">
-      <form onSubmit={submit} className="w-full max-w-sm space-y-4 rounded-2xl bg-white p-8 shadow-lg">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-fuchsia-500 text-white">
-            <Sparkles size={16} />
-          </div>
-          <span className="text-lg font-bold">QuoteWell</span>
-        </div>
-        <h1 className="text-2xl font-bold">{mode === "signin" ? "Welcome back" : "Create your account"}</h1>
-        <input className="w-full rounded-md border px-3 py-2 text-sm" type="email" required autoComplete="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        <input className="w-full rounded-md border px-3 py-2 text-sm" type="password" required minLength={8} autoComplete={mode === "signin" ? "current-password" : "new-password"} placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
-        {info && <p className="text-sm text-green-700">{info}</p>}
-        <button disabled={busy} className="w-full rounded-md bg-violet-600 py-2 text-sm font-medium text-white disabled:opacity-60">
-          {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Sign up"}
+    <div className="flex min-h-dvh flex-col bg-paper px-4">
+      <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-12">
+        <Link to="/" className="self-start"><Wordmark /></Link>
+        <h1 className="mt-8 text-[28px] font-semibold tracking-tight">{mode === "signin" ? "Sign in" : "Create your account"}</h1>
+        <p className="mt-1 text-sm text-muted">{mode === "signin" ? "Your leads, follow-ups and quotes." : "Free while you set it up. No card needed."}</p>
+        {DEMO && mode === "signin" && (
+          <p className="mt-5 rounded-lg border border-marigold/50 bg-marigold-soft/60 px-3 py-2 text-[13px] text-[#6b4800]">
+            Demo account filled in. Press <b>Sign in</b> to look around.
+          </p>
+        )}
+        <form onSubmit={submit} className="mt-5 space-y-4">
+          <Field label="Email">
+            <input className={inputClass} type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </Field>
+          <Field label="Password">
+            <input className={inputClass} type="password" required minLength={8} autoComplete={mode === "signin" ? "current-password" : "new-password"} value={password} onChange={(e) => setPassword(e.target.value)} />
+          </Field>
+          {error && <p role="alert" className="text-sm text-danger">{error}</p>}
+          {info && <p className="text-sm text-stage-won">{info}</p>}
+          <Button disabled={busy} className="w-full">{busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}</Button>
+        </form>
+        <button type="button" onClick={() => setMode(mode === "signin" ? "signup" : "signin")} className="mt-5 text-sm text-muted hover:text-ink">
+          {mode === "signin" ? "New here? Create an account" : "Already have an account? Sign in"}
         </button>
-        <button type="button" onClick={() => setMode(mode === "signin" ? "signup" : "signin")} className="w-full text-sm text-slate-500">
-          {mode === "signin" ? "No account yet? Sign up" : "Already have an account? Sign in"}
-        </button>
-      </form>
+      </div>
     </div>
   );
 }

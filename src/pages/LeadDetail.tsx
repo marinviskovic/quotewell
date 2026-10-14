@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, Mail, Phone, Trash2 } from "lucide-react";
 import { addActivity, deleteLead, getActivities, getLead, updateLead } from "@/lib/api";
-import StageBadge from "@/components/StageBadge";
+import { notifyLeadsChanged } from "@/lib/useLeads";
 import { STAGES } from "@/lib/stages";
 import { formatDateTime, formatDay, formatMoney } from "@/lib/format";
+import StageBadge, { stageStyle } from "@/components/StageBadge";
+import FollowUpChip from "@/components/FollowUpChip";
+import { Button, Card, inputClass } from "@/components/ui";
+import { ErrorNote, PageSkeleton } from "@/components/states";
 import type { Activity, Lead, Stage } from "@/types";
 
 export default function LeadDetail() {
@@ -13,80 +17,162 @@ export default function LeadDetail() {
   const [lead, setLead] = useState<Lead | null | undefined>(undefined);
   const [activities, setActivities] = useState<Activity[]>([]);
   const [note, setNote] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   // Re-load when the id in the URL changes, not only on first mount.
   useEffect(() => {
     setLead(undefined);
-    getLead(id!).then(setLead);
-    getActivities(id!).then(setActivities);
+    Promise.all([getLead(id!), getActivities(id!)])
+      .then(([l, a]) => {
+        setLead(l);
+        setActivities(a);
+      })
+      .catch((e: Error) => setError(e.message));
   }, [id]);
 
-  if (lead === undefined) return <div>Loading...</div>;
+  if (error) return <ErrorNote message={error} />;
+  if (lead === undefined) return <PageSkeleton />;
   if (lead === null)
     return (
-      <div>
-        <p className="mb-2">This lead doesn't exist or was deleted.</p>
-        <Link to="/leads" className="text-violet-700 underline">Back to leads</Link>
-      </div>
+      <Card className="px-6 py-14 text-center">
+        <p className="font-medium">This lead doesn't exist or was deleted.</p>
+        <Link to="/app/leads" className="mt-2 inline-block text-sm text-fern underline">Back to leads</Link>
+      </Card>
     );
 
-  const changeStage = async (stage: Stage) => {
-    const previous = lead.stage;
-    setLead({ ...lead, stage });
+  const save = async (patch: Partial<Lead>) => {
+    const previous = lead;
+    setLead({ ...lead, ...patch });
     try {
-      await updateLead(lead.id, { stage });
-    } catch {
-      setLead({ ...lead, stage: previous });
+      await updateLead(lead.id, patch);
+      notifyLeadsChanged();
+    } catch (e) {
+      setLead(previous);
+      setError((e as Error).message);
     }
   };
 
   const remove = async () => {
-    if (!window.confirm(`Delete ${lead.name}? This also deletes their notes.`)) return;
+    if (!window.confirm(`Delete ${lead.name}? Their notes are deleted too.`)) return;
     await deleteLead(lead.id);
-    navigate("/leads");
+    notifyLeadsChanged();
+    navigate("/app/leads");
   };
 
   const submitNote = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!note.trim()) return;
-    const added = await addActivity(lead.id, note.trim());
-    setActivities([...activities, added]);
-    setNote("");
+    if (!note.trim() || saving) return;
+    setSaving(true);
+    try {
+      const added = await addActivity(lead.id, note.trim());
+      setActivities([...activities, added]);
+      setNote("");
+    } finally {
+      setSaving(false);
+    }
   };
 
+  const details = [
+    { label: "Service", value: lead.service || "—" },
+    { label: "Estimated value", value: formatMoney(lead.value), num: true },
+    { label: "Source", value: lead.source },
+    { label: "Added", value: formatDay(lead.created_at.slice(0, 10)) },
+  ];
+
   return (
-    <div className="max-w-3xl">
-      <button onClick={() => navigate(-1)} className="mb-4 flex items-center gap-1 text-sm text-slate-500"><ArrowLeft size={16} /> Back</button>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">{lead.name}</h1>
-          <p className="text-slate-500">{lead.service} · {formatMoney(lead.value)}</p>
+    <div className="mx-auto max-w-4xl space-y-5">
+      <Link to="/app/leads" className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink">
+        <ArrowLeft size={16} /> Leads
+      </Link>
+
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-[28px]">{lead.name}</h1>
+            <StageBadge stage={lead.stage} />
+          </div>
+          <p className="mt-1 text-sm text-muted">{[lead.company, lead.service].filter(Boolean).join(" · ")}</p>
         </div>
-        <button onClick={remove} className="flex items-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm text-white">
-          <Trash2 size={16} /> Delete
-        </button>
-      </div>
-      <div className="mb-6 grid grid-cols-2 gap-4 rounded-xl border bg-white p-5 text-sm">
-        <div><div className="text-slate-500">Email</div>{lead.email}</div>
-        <div><div className="text-slate-500">Phone</div>{lead.phone ?? "—"}</div>
-        <div><div className="text-slate-500">Stage</div>
-          <select value={lead.stage} onChange={(e) => changeStage(e.target.value as Stage)} className="mt-1 rounded border px-2 py-1">
-            {STAGES.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
-          </select>
-          <span className="ml-2"><StageBadge stage={lead.stage} /></span>
+        <div className="flex gap-2">
+          <a href={`mailto:${lead.email}`} className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-lg border border-line-strong bg-surface px-4 text-sm font-medium hover:bg-paper sm:flex-none">
+            <Mail size={16} /> Email
+          </a>
+          {lead.phone && (
+            <a href={`tel:${lead.phone.replace(/[^\d+]/g, "")}`} className="inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-lg border border-line-strong bg-surface px-4 text-sm font-medium hover:bg-paper sm:flex-none">
+              <Phone size={16} /> Call
+            </a>
+          )}
+          <Button variant="danger" onClick={remove} aria-label={`Delete ${lead.name}`} className="w-10 px-0">
+            <Trash2 size={16} />
+          </Button>
         </div>
-        <div><div className="text-slate-500">Follow-up</div>{formatDay(lead.follow_up)}</div>
-        <div className="col-span-2"><div className="text-slate-500">Notes</div>{lead.notes}</div>
       </div>
-      <div className="rounded-xl border bg-white p-5">
-        <h2 className="mb-3 font-semibold">Activity</h2>
-        {activities.map((a) => (
-          <div key={a.id} className="border-t py-2 text-sm">{a.body} <span className="text-slate-400">· {formatDateTime(a.created_at)}</span></div>
-        ))}
-        <form onSubmit={submitNote} className="mt-3 flex gap-2">
-          <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Add a note..." className="flex-1 rounded-md border px-3 py-2 text-sm" />
-          <button disabled={!note.trim()} className="rounded-md bg-violet-600 px-4 py-2 text-sm text-white disabled:opacity-50">Add</button>
-        </form>
+
+      <div className="no-scrollbar -mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+        <div className="inline-flex rounded-xl border border-line bg-surface p-1 shadow-card" role="radiogroup" aria-label="Stage">
+          {STAGES.map((s) => (
+            <button
+              key={s.id}
+              role="radio"
+              aria-checked={lead.stage === s.id}
+              onClick={() => save({ stage: s.id as Stage })}
+              className={`flex h-8 items-center gap-1.5 rounded-lg px-3 text-[13px] font-medium transition-colors ${lead.stage === s.id ? "bg-ink text-white" : "text-muted hover:text-ink"}`}
+            >
+              <span className={`h-1.5 w-1.5 rounded-full ${stageStyle[s.id].dot}`} />
+              {s.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-5">
+        <div className="space-y-5 lg:col-span-2">
+          <Card className="p-5">
+            <h2 className="text-sm font-semibold">Contact</h2>
+            <dl className="mt-3 space-y-2.5 text-sm">
+              <div><dt className="text-xs text-muted">Email</dt><dd className="truncate">{lead.email}</dd></div>
+              <div><dt className="text-xs text-muted">Phone</dt><dd>{lead.phone ?? "—"}</dd></div>
+            </dl>
+          </Card>
+          <Card className="p-5">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold">Next follow-up</h2>
+              <FollowUpChip date={lead.follow_up} />
+            </div>
+            <input type="date" aria-label="Follow-up date" className={`${inputClass} mt-3`} value={lead.follow_up ?? ""} onChange={(e) => save({ follow_up: e.target.value || null })} />
+          </Card>
+          <Card className="p-5">
+            <h2 className="text-sm font-semibold">Job</h2>
+            <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+              {details.map((d) => (
+                <div key={d.label}><dt className="text-xs text-muted">{d.label}</dt><dd className={d.num ? "num font-medium" : ""}>{d.value}</dd></div>
+              ))}
+            </dl>
+            {lead.notes && <p className="mt-4 rounded-lg bg-paper p-3 text-sm leading-relaxed text-ink/85">{lead.notes}</p>}
+          </Card>
+        </div>
+
+        <Card className="flex flex-col p-5 lg:col-span-3">
+          <h2 className="text-sm font-semibold">Activity</h2>
+          {activities.length === 0 ? (
+            <p className="mt-3 text-sm text-muted">No notes yet. Log calls, site visits and quotes here.</p>
+          ) : (
+            <ol className="mt-4 space-y-4 border-l border-line pl-4">
+              {activities.map((a) => (
+                <li key={a.id} className="relative">
+                  <span className="absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-surface bg-fern" />
+                  <p className="text-sm">{a.body}</p>
+                  <p className="mt-0.5 text-xs text-faint">{formatDateTime(a.created_at)}</p>
+                </li>
+              ))}
+            </ol>
+          )}
+          <form onSubmit={submitNote} className="mt-auto flex gap-2 pt-5">
+            <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Add a note, e.g. Sent quote" aria-label="New note" className={inputClass} />
+            <Button disabled={!note.trim() || saving}>Add</Button>
+          </form>
+        </Card>
       </div>
     </div>
   );

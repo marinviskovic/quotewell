@@ -21,3 +21,20 @@ export const formatDay = (key: string | null) =>
 
 export const formatDateTime = (iso: string) =>
   new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+
+/** Whole days from today to a YYYY-MM-DD date (negative = in the past). */
+export function daysFromToday(key: string) {
+  const today = parseDay(todayKey());
+  return Math.round((parseDay(key).getTime() - today.getTime()) / 86_400_000);
+}
+
+export function followUpLabel(key: string | null): { text: string; tone: "overdue" | "today" | "soon" | "later" | "none" } {
+  if (!key) return { text: "No follow-up", tone: "none" };
+  const d = daysFromToday(key);
+  const short = parseDay(key).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  if (d < 0) return { text: `Overdue · ${short}`, tone: "overdue" };
+  if (d === 0) return { text: "Today", tone: "today" };
+  if (d === 1) return { text: "Tomorrow", tone: "soon" };
+  if (d < 7) return { text: parseDay(key).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }), tone: "soon" };
+  return { text: short, tone: "later" };
+}
