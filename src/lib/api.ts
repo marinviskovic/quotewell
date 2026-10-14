@@ -1,9 +1,6 @@
-import { supabase } from "@/integrations/supabase/client";
-import { supabaseAdmin } from "@/integrations/supabase/admin";
+import { DEMO, supabase } from "@/integrations/supabase/client";
 import { demoStore } from "./demo-store";
 import type { Activity, Lead } from "@/types";
-
-const DEMO = import.meta.env.VITE_DEMO_MODE === "true";
 
 export async function getLeads(): Promise<Lead[]> {
   if (DEMO) return demoStore.listLeads();
@@ -30,7 +27,7 @@ export async function updateLead(id: string, patch: Partial<Lead>) {
 
 export async function deleteLead(id: string) {
   if (DEMO) return demoStore.deleteLead(id);
-  await supabaseAdmin.from("leads").delete().eq("id", id);
+  await supabase.from("leads").delete().eq("id", id);
 }
 
 export async function getActivities(leadId: string): Promise<Activity[]> {
