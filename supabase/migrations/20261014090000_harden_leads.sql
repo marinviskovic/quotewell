@@ -51,6 +51,9 @@ drop policy "Allow all access to leads" on public.leads;
 drop policy "Allow all access to activities" on public.activities;
 
 revoke all on public.leads, public.activities from anon;
+-- Explicit, in case the project was created without auto-exposing new tables.
+grant select, insert, update, delete on public.leads to authenticated;
+grant select, insert, delete on public.activities to authenticated;
 
 create policy "Users read their own leads" on public.leads
   for select to authenticated using ((select auth.uid()) = owner_id);
