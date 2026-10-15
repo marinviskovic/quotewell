@@ -7,7 +7,8 @@ import { loadEnv } from "vite";
 
 const root = resolve(import.meta.dirname, "..");
 const env = loadEnv(process.env.MODE ?? "production", root, "VITE_");
-const site = (env.VITE_SITE_URL || "https://quotewell.app").replace(/\/$/, "");
+const vercelUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL && `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+const site = (process.env.VITE_SITE_URL || env.VITE_SITE_URL || vercelUrl || "https://quotewell.app").replace(/\/$/, "");
 
 const { render } = await import(pathToFileURL(resolve(root, "dist-ssr/entry-server.js")).href);
 const file = resolve(root, "dist/index.html");
