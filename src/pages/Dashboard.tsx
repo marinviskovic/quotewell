@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowUpRight, Plus } from "lucide-react";
 import { useLeads } from "@/lib/useLeads";
 import { usePageTitle } from "@/lib/usePageTitle";
+import { isDemoAccount, useAuth } from "@/auth/AuthProvider";
 import { daysFromToday, formatMoney, parseDay, todayKey } from "@/lib/format";
 import { STAGES } from "@/lib/stages";
 import { useOpenLeadForm } from "@/components/Layout";
@@ -14,6 +15,7 @@ export default function Dashboard() {
   const { leads, error } = useLeads();
   const openForm = useOpenLeadForm();
   usePageTitle("Dashboard");
+  const { user } = useAuth();
   if (error) return <ErrorNote message={error} />;
   if (!leads) return <PageSkeleton />;
 
@@ -46,7 +48,7 @@ export default function Dashboard() {
       <div className="flex items-end justify-between gap-4">
         <div>
           <p className="text-sm text-muted">{parseDay(todayKey()).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}</p>
-          <h1 className="mt-0.5 text-2xl font-semibold tracking-tight sm:text-[28px]">Good to see you, Fernway</h1>
+          <h1 className="mt-0.5 text-2xl font-semibold tracking-tight sm:text-[28px]">{isDemoAccount(user) ? "Good to see you, Fernway" : "Good to see you"}</h1>
         </div>
         <div className="hidden sm:block"><Button onClick={openForm}><Plus size={16} /> New lead</Button></div>
       </div>

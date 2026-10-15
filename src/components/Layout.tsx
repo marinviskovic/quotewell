@@ -1,7 +1,7 @@
 import { createContext, useContext, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import { Columns3, LayoutDashboard, LogOut, Plus, Users } from "lucide-react";
-import { useAuth } from "@/auth/AuthProvider";
+import { isDemoAccount, useAuth } from "@/auth/AuthProvider";
 import { DEMO } from "@/integrations/supabase/client";
 import LeadForm from "./LeadForm";
 import { Button, Logo, Wordmark } from "./ui";
@@ -50,7 +50,7 @@ export default function Layout() {
             <div className="flex items-center gap-2.5">
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-marigold-soft text-sm font-semibold text-[#8a5a00]">{initial}</span>
               <div className="min-w-0">
-                <div className="truncate text-[13px] font-medium">Fernway Landscaping</div>
+                <div className="truncate text-[13px] font-medium">{isDemoAccount(user) ? "Fernway Landscaping" : "Your workspace"}</div>
                 <div className="truncate text-xs text-muted">{user?.email}</div>
               </div>
             </div>
@@ -68,9 +68,9 @@ export default function Layout() {
           </button>
         </header>
 
-        {DEMO && (
+        {(DEMO || isDemoAccount(user)) && (
           <div className="border-b border-line bg-marigold-soft/70 px-4 py-1.5 text-center text-xs text-[#7a5200] lg:px-8">
-            Concept demo with sample data. Changes stay in your browser.
+            {DEMO ? "Concept demo with sample data. Changes stay in your browser." : "Shared demo account. The sample data resets every night."}
           </div>
         )}
 

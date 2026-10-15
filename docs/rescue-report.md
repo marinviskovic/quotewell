@@ -68,6 +68,13 @@ PASS owner still sees their notes
 PASS mis-cased stage is rejected
 PASS owner can delete their lead (notes go with it)
 PASS deleted lead's notes were removed
+
+--- Shared demo account: migrations/20261015090000_demo_account.sql
+PASS demo account gets 12 sample leads
+PASS demo account gets 5 sample notes
+PASS visitors cannot call reset_demo
+PASS nightly reset restores the sample data
+PASS other users still see only their own leads
 ```
 
 ### App (`npm run test:e2e`, Chromium, America/Los_Angeles)
@@ -87,6 +94,6 @@ Before: total blocking time 670 ms on mobile. After: 20 ms, first paint 1.4 s.
 
 ## What the client still does
 
-- Create the Supabase project and run the two migrations.
-- Connect the repository to Vercel, add the three environment variables.
+- Create the Supabase project and run the migrations.
+- Connect the repository to Vercel, add the two Supabase environment variables.
 - Point the domain's DNS at Vercel (records in the README).

@@ -62,3 +62,27 @@ end $$;
 with d as (delete from public.leads where name = 'Tom Becker' returning 1) select pg_temp.check('owner can delete their lead (notes go with it)', (select count(*) from d) = 1);
 reset role;
 select pg_temp.check('deleted lead''s notes were removed', (select count(*) from public.activities) = 0);
+
+-- Demo account migration
+insert into auth.users (id, email) values ('33333333-3333-3333-3333-333333333333', 'demo@quotewell.app');
+\i migrations/20261015090000_demo_account.sql
+set role authenticated;
+set request.jwt.claims = '{"sub": "33333333-3333-3333-3333-333333333333"}';
+select pg_temp.check('demo account gets 12 sample leads', (select count(*) from public.leads) = 12);
+select pg_temp.check('demo account gets 5 sample notes', (select count(*) from public.activities) = 5);
+do $$ begin
+  perform public.reset_demo();
+  perform pg_temp.check('visitors cannot call reset_demo', false);
+exception when insufficient_privilege then
+  perform pg_temp.check('visitors cannot call reset_demo', true);
+end $$;
+delete from public.leads;
+reset role;
+select public.reset_demo();
+set role authenticated;
+select pg_temp.check('nightly reset restores the sample data', (select count(*) from public.leads) = 12);
+reset role;
+set role authenticated;
+set request.jwt.claims = '{"sub": "22222222-2222-2222-2222-222222222222"}';
+select pg_temp.check('other users still see only their own leads', (select count(*) from public.leads) = 1);
+reset role;

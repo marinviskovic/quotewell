@@ -7,15 +7,17 @@ type AuthState = {
   user: User | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<string | null>;
-  signUp: (email: string, password: string) => Promise<string | null>;
+  signUp: (email: string, password: string) => Promise<{ error?: string; confirmEmail?: boolean }>;
   signOut: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthState | null>(null);
 
-// Demo mode keeps a fake session in localStorage so the concept runs without a backend.
+// The public demo account. In demo mode it is a fake session in localStorage;
+// with Supabase it is a real user whose sample data resets every night.
 export const DEMO_USER: User = { id: "demo-user", email: "demo@quotewell.app" };
 export const DEMO_PASSWORD = "demo1234";
+export const isDemoAccount = (user: User | null) => user?.email === DEMO_USER.email;
 const SESSION_KEY = "quotewell-demo-session";
 
 function readDemoSession(): User | null {
@@ -72,13 +74,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (email: string, password: string) => {
-    if (DEMO) return "Sign-ups are off in the demo. Use the demo account.";
-    const { error } = await supabase.auth.signUp({
+    if (DEMO) return { error: "Sign-ups are off in the offline demo. Use the demo account." };
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { emailRedirectTo: `${window.location.origin}/app` },
     });
-    return error ? error.message : null;
+    if (error) return { error: error.message };
+    // With email confirmation off, Supabase signs the user in straight away.
+    return { confirmEmail: !data.session };
   };
 
   const signOut = async () => {

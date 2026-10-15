@@ -25,10 +25,16 @@ export default function Login() {
     setError(null);
     setInfo(null);
     setBusy(true);
-    const err = mode === "signin" ? await signIn(email, password) : await signUp(email, password);
-    setBusy(false);
-    if (err) return setError(err);
-    if (mode === "signup") return setInfo("Check your inbox to confirm your email, then sign in.");
+    if (mode === "signin") {
+      const err = await signIn(email, password);
+      setBusy(false);
+      if (err) return setError(err);
+    } else {
+      const res = await signUp(email, password);
+      setBusy(false);
+      if (res.error) return setError(res.error);
+      if (res.confirmEmail) return setInfo("Check your inbox to confirm your email, then sign in.");
+    }
     navigate(from, { replace: true });
   };
 
@@ -38,10 +44,19 @@ export default function Login() {
         <Link to="/" className="self-start"><Wordmark /></Link>
         <h1 className="mt-8 text-[28px] font-semibold tracking-tight">{mode === "signin" ? "Sign in" : "Create your account"}</h1>
         <p className="mt-1 text-sm text-muted">{mode === "signin" ? "Your leads, follow-ups and quotes." : "Free while you set it up. No card needed."}</p>
-        {DEMO && mode === "signin" && (
-          <p className="mt-5 rounded-lg border border-marigold/50 bg-marigold-soft/60 px-3 py-2 text-[13px] text-[#6b4800]">
-            Demo account filled in. Press <b>Sign in</b> to look around.
-          </p>
+        {mode === "signin" && (
+          <div className="mt-5 flex items-center justify-between gap-3 rounded-lg border border-marigold/50 bg-marigold-soft/60 px-3 py-2 text-[13px] text-[#6b4800]">
+            {email === DEMO_USER.email ? (
+              <span>Demo account filled in. Press <b>Sign in</b> to look around.</span>
+            ) : (
+              <>
+                <span>Just looking? Use the shared demo account.</span>
+                <button type="button" onClick={() => { setEmail(DEMO_USER.email); setPassword(DEMO_PASSWORD); }} className="shrink-0 font-semibold underline underline-offset-2">
+                  Fill it in
+                </button>
+              </>
+            )}
+          </div>
         )}
         <form onSubmit={submit} className="mt-5 space-y-4">
           <Field label="Email">
