@@ -70,7 +70,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return null;
     }
     const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return error ? error.message : null;
+    if (!error) return null;
+    return error.code === "invalid_credentials" ? "Wrong email or password." : error.message;
   };
 
   const signUp = async (email: string, password: string) => {
