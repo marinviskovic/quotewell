@@ -46,6 +46,9 @@ npm run dev
 2. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` under Settings > Environment
    Variables. `VITE_SITE_URL` (canonical URL, sitemap, Open Graph) falls back to the
    project's production `*.vercel.app` address; set it once a custom domain is live.
+3. Nothing else to set up for the daily keep-alive: a Vercel cron calls `/api/keepalive`, which
+   signs in as the demo account and reads one lead, so the free Supabase project never pauses
+   for inactivity. Set `CRON_SECRET` if the endpoint should only answer Vercel.
 
 ## Custom domain
 
