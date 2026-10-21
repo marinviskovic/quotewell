@@ -92,8 +92,22 @@ no sideways scroll on phones (5 pages), sign out, no JavaScript errors.
 
 Before: total blocking time 670 ms on mobile. After: 20 ms, first paint 1.4 s.
 
-## What the client still does
+### Live site (https://quotewell-crm.vercel.app, Supabase West EU)
 
-- Create the Supabase project and run the migrations.
-- Connect the repository to Vercel, add the two Supabase environment variables.
-- Point the domain's DNS at Vercel (records in the README).
+15/15 checks pass: sign-in redirect, wrong password, demo sign-in, 12 leads from the
+database, pipeline total, nightly-reset banner, add and delete a lead, deep-link refresh,
+no sideways scroll on phones (5 pages), sign out, no JavaScript or CSP errors, and through
+the public API: a signed-out visitor cannot read or insert leads or run the reset, and the
+demo user reads exactly their own 12 leads.
+
+Lighthouse on the live site: performance 98 mobile / 100 desktop, SEO 100,
+accessibility 100, best practices 100.
+
+The first live run found one more issue: refreshing a lead page returned Vercel's 404.
+The local preview has its own fallback, so the rewrite rule had never really run; it now
+uses Vercel's standard rule.
+
+## What a real client would still do
+
+- Point their domain's DNS at Vercel (records in the README).
+- Set up their own SMTP in Supabase and turn "Confirm email" back on.

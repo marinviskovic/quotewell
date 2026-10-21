@@ -5,6 +5,9 @@ and taken to production. **Concept project**: the business and all data are made
 
 Stack: React 19, Vite, TypeScript, Tailwind CSS 4, Supabase (Postgres, Auth, RLS), Vercel.
 
+**Live:** https://quotewell-crm.vercel.app. On the sign-in page, "Fill it in" uses the shared
+demo account (`demo@quotewell.app` / `demo1234`); its data resets every night.
+
 ## Run it
 
 ```sh
